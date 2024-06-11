@@ -352,10 +352,8 @@ template <typename MF>
 template <typename AMF>
 auto
 MLMGT<MF>::solve (const Vector<AMF*>& a_sol, const Vector<AMF const*>& a_rhs,
-                  RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file) -> std::tuple<RT, int>
+                  RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file) -> RT
 {
-
-    int total_iters = 0;
     BL_PROFILE("MLMG::solve()");
 
     if constexpr (std::is_same<AMF,MultiFab>()) {
@@ -472,7 +470,6 @@ MLMGT<MF>::solve (const Vector<AMF*>& a_sol, const Vector<AMF const*>& a_rhs,
                                    << " resid, resid/" << norm_name << " = "
                                    << composite_norminf << ", "
                                    << composite_norminf/max_norm << "\n";
-                    total_iters = iter + 1;
                 }
                 break;
             } else {
@@ -538,7 +535,7 @@ MLMGT<MF>::solve (const Vector<AMF*>& a_sol, const Vector<AMF const*>& a_rhs,
 
     ++solve_called;
 
-    return std::make_tuple(composite_norminf, total_iters);
+    return composite_norminf;
 }
 
 template <typename MF>
