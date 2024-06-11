@@ -60,7 +60,7 @@ public:
 
     int getPoissonIters () {
         return poisson_iters;
-    }
+    };
 
     /**
     * \brief For ``(alpha * a - beta * (del dot b grad)) phi = rhs``, flux means ``-b grad phi``
