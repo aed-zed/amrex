@@ -472,8 +472,8 @@ MLMGT<MF>::solve (const Vector<AMF*>& a_sol, const Vector<AMF const*>& a_rhs,
                                    << " resid, resid/" << norm_name << " = "
                                    << composite_norminf << ", "
                                    << composite_norminf/max_norm << "\n";
+                    total_iters = iter + 1;
                 }
-                total_iters = iter + 1;
                 break;
             } else {
                 if (composite_norminf > RT(1.e20)*max_norm)
