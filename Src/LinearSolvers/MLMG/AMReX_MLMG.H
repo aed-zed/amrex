@@ -58,6 +58,10 @@ public:
     void getGradSolution (std::initializer_list<Array<AMF*,AMREX_SPACEDIM>> a_grad_sol,
                           Location a_loc = Location::FaceCenter);
 
+    int getPoissonIters () {
+        return poisson_iters;
+    };
+
     /**
     * \brief For ``(alpha * a - beta * (del dot b grad)) phi = rhs``, flux means ``-b grad phi``
     */
@@ -229,6 +233,7 @@ public:
 
 private:
 
+    int poisson_iters = 0; 
     bool throw_exception = false;
     int verbose = 1;
 
@@ -470,6 +475,7 @@ MLMGT<MF>::solve (const Vector<AMF*>& a_sol, const Vector<AMF const*>& a_rhs,
                                    << " resid, resid/" << norm_name << " = "
                                    << composite_norminf << ", "
                                    << composite_norminf/max_norm << "\n";
+                    poisson_iters = iter + 1; 
                 }
                 break;
             } else {
