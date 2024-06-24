@@ -54,6 +54,7 @@ public:
 
     [[nodiscard]] virtual const Level& getLevel (const Geometry & geom) const = 0;
     [[nodiscard]] virtual const Geometry& getGeometry (const Box& domain) const = 0;
+    [[nodiscard]] virtual const Vector<Geometry>& getGeometries () const = 0;
     [[nodiscard]] virtual const Box& coarsestDomain () const = 0;
     virtual void addFineLevels (int num_new_fine_levels) = 0;
     virtual void addRegularCoarseLevels (int num_new_coarse_levels) = 0;
