@@ -85,6 +85,7 @@ public:
     ~IndexSpaceImp () override = default;
 
     [[nodiscard]] const Level& getLevel (const Geometry& geom) const final;
+    [[nodiscard]] const Geometry& getGeometry (const Box& dom) const final; 
     [[nodiscard]] const Vector<Geometry>& getGeometries () const final {
         return m_geom; 
     }    
