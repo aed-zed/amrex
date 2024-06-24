@@ -30,7 +30,7 @@ public:
 
     [[nodiscard]] const Level& getLevel (const Geometry& geom) const final;
     [[nodiscard]] const Geometry& getGeometry (const Box& dom) const final;
-    const Vector<Geometry>& getGeometries () const {
+    [[nodiscard]] const Vector<Geometry>& getGeometries () const final {
         return m_geom; 
     }
     [[nodiscard]] const Box& coarsestDomain () const final {
