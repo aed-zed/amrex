@@ -48,7 +48,7 @@ public:
     template <typename AMF>
     RT solve (std::initializer_list<AMF*> a_sol,
               std::initializer_list<AMF const*> a_rhs,
-              RT a_tol_rel, RT a_tol_abs, bool poisson_skip = false, const char* checkpoint_file = nullptr;
+              RT a_tol_rel, RT a_tol_abs, bool poisson_skip = false, const char* checkpoint_file = nullptr);
 
     template <typename AMF>
     void getGradSolution (const Vector<Array<AMF*,AMREX_SPACEDIM> >& a_grad_sol,
@@ -351,8 +351,8 @@ MLMGT<MF>::solve (std::initializer_list<AMF*> a_sol,
 {
     return solve(Vector<AMF*>(std::move(a_sol)),
                  Vector<AMF const*>(std::move(a_rhs)),
-                 a_tol_rel, a_tol_abs, checkpoint_file, 
-                 poisson_skip);
+                 a_tol_rel, a_tol_abs, poisson_skip, 
+                 checkpoint_file);
 }
 
 template <typename MF>
