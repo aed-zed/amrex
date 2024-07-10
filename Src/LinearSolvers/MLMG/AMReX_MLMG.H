@@ -43,12 +43,12 @@ public:
     // Optional argument checkpoint_file is for debugging only.
     template <typename AMF>
     RT solve (const Vector<AMF*>& a_sol, const Vector<AMF const*>& a_rhs,
-              RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file = nullptr);
+              RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file = nullptr, bool poisson_skip = false);
 
     template <typename AMF>
     RT solve (std::initializer_list<AMF*> a_sol,
               std::initializer_list<AMF const*> a_rhs,
-              RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file = nullptr);
+              RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file = nullptr, bool poisson_skip = false);
 
     template <typename AMF>
     void getGradSolution (const Vector<Array<AMF*,AMREX_SPACEDIM> >& a_grad_sol,
