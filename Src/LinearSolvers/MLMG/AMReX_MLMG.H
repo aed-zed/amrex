@@ -43,12 +43,12 @@ public:
     // Optional argument checkpoint_file is for debugging only.
     template <typename AMF>
     RT solve (const Vector<AMF*>& a_sol, const Vector<AMF const*>& a_rhs,
-              RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file = nullptr, bool poisson_skip = false);
+              RT a_tol_rel, RT a_tol_abs, bool poisson_skip = false, const char* checkpoint_file = nullptr);
 
     template <typename AMF>
     RT solve (std::initializer_list<AMF*> a_sol,
               std::initializer_list<AMF const*> a_rhs,
-              RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file = nullptr, bool poisson_skip = false);
+              RT a_tol_rel, RT a_tol_abs, bool poisson_skip = false, const char* checkpoint_file = nullptr;
 
     template <typename AMF>
     void getGradSolution (const Vector<Array<AMF*,AMREX_SPACEDIM> >& a_grad_sol,
@@ -346,8 +346,8 @@ template <typename AMF>
 auto
 MLMGT<MF>::solve (std::initializer_list<AMF*> a_sol,
                   std::initializer_list<AMF const*> a_rhs,
-                  RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file, 
-                  bool poisson_skip) -> RT
+                  RT a_tol_rel, RT a_tol_abs, bool poisson_skip,
+                  const char* checkpoint_file) -> RT
 {
     return solve(Vector<AMF*>(std::move(a_sol)),
                  Vector<AMF const*>(std::move(a_rhs)),
@@ -359,8 +359,8 @@ template <typename MF>
 template <typename AMF>
 auto
 MLMGT<MF>::solve (const Vector<AMF*>& a_sol, const Vector<AMF const*>& a_rhs,
-                  RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file,
-                  bool poisson_skip) -> RT
+                  RT a_tol_rel, RT a_tol_abs, bool poisson_skip,
+                  const char* checkpoint_file) -> RT
 {
     BL_PROFILE("MLMG::solve()");
 
