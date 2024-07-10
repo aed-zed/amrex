@@ -346,18 +346,21 @@ template <typename AMF>
 auto
 MLMGT<MF>::solve (std::initializer_list<AMF*> a_sol,
                   std::initializer_list<AMF const*> a_rhs,
-                  RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file) -> RT
+                  RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file, 
+                  bool skip_poisson = false) -> RT
 {
     return solve(Vector<AMF*>(std::move(a_sol)),
                  Vector<AMF const*>(std::move(a_rhs)),
-                 a_tol_rel, a_tol_abs, checkpoint_file);
+                 a_tol_rel, a_tol_abs, checkpoint_file, 
+                 skip_poisson);
 }
 
 template <typename MF>
 template <typename AMF>
 auto
 MLMGT<MF>::solve (const Vector<AMF*>& a_sol, const Vector<AMF const*>& a_rhs,
-                  RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file) -> RT
+                  RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file,
+                  bool skip_poisson = false) -> RT
 {
     BL_PROFILE("MLMG::solve()");
 
@@ -422,96 +425,98 @@ MLMGT<MF>::solve (const Vector<AMF*>& a_sol, const Vector<AMF const*>& a_rhs,
     }
     const RT res_target = std::max(a_tol_abs, std::max(a_tol_rel,RT(1.e-16))*max_norm);
 
-    if (!is_nsolve && resnorm0 <= res_target) {
-        composite_norminf = resnorm0;
-        if (verbose >= 1) {
-            amrex::Print() << "MLMG: No iterations needed\n";
-        }
-    } else {
-        auto iter_start_time = amrex::second();
-        bool converged = false;
-
-        const int niters = do_fixed_number_of_iters ? do_fixed_number_of_iters : max_iters;
-        for (int iter = 0; iter < niters; ++iter)
-        {
-            oneIter(iter);
-
-            converged = false;
-
-            // Test convergence on the fine amr level
-            computeResidual(finest_amr_lev);
-
-            if (is_nsolve) { continue; }
-
-            RT fine_norminf = ResNormInf(finest_amr_lev);
-            m_iter_fine_resnorm0.push_back(fine_norminf);
-            composite_norminf = fine_norminf;
-            if (verbose >= 2) {
-                amrex::Print() << "MLMG: Iteration " << std::setw(3) << iter+1 << " Fine resid/"
-                               << norm_name << " = " << fine_norminf/max_norm << "\n";
+    if (!skip_poisson) {
+        if (!is_nsolve && resnorm0 <= res_target) {
+            composite_norminf = resnorm0;
+            if (verbose >= 1) {
+                amrex::Print() << "MLMG: No iterations needed\n";
             }
-            bool fine_converged = (fine_norminf <= res_target);
+        } else {
+            auto iter_start_time = amrex::second();
+            bool converged = false;
 
-            if (namrlevs == 1 && fine_converged) {
-                converged = true;
-            } else if (fine_converged) {
-                // finest level is converged, but we still need to test the coarse levels
-                computeMLResidual(finest_amr_lev-1);
-                RT crse_norminf = MLResNormInf(finest_amr_lev-1);
-                if (verbose >= 2) {
-                    amrex::Print() << "MLMG: Iteration " << std::setw(3) << iter+1
-                                   << " Crse resid/" << norm_name << " = "
-                                   << crse_norminf/max_norm << "\n";
-                }
-                converged = (crse_norminf <= res_target);
-                composite_norminf = std::max(fine_norminf, crse_norminf);
-            } else {
+            const int niters = do_fixed_number_of_iters ? do_fixed_number_of_iters : max_iters;
+            for (int iter = 0; iter < niters; ++iter)
+            {
+                oneIter(iter);
+
                 converged = false;
-            }
 
-            if (converged) {
-                if (verbose >= 1) {
-                    amrex::Print() << "MLMG: Final Iter. " << iter+1
-                                   << " resid, resid/" << norm_name << " = "
-                                   << composite_norminf << ", "
-                                   << composite_norminf/max_norm << "\n";
-                    poisson_iters = iter + 1; 
+                // Test convergence on the fine amr level
+                computeResidual(finest_amr_lev);
+
+                if (is_nsolve) { continue; }
+
+                RT fine_norminf = ResNormInf(finest_amr_lev);
+                m_iter_fine_resnorm0.push_back(fine_norminf);
+                composite_norminf = fine_norminf;
+                if (verbose >= 2) {
+                    amrex::Print() << "MLMG: Iteration " << std::setw(3) << iter+1 << " Fine resid/"
+                                << norm_name << " = " << fine_norminf/max_norm << "\n";
                 }
-                break;
-            } else {
-                if (composite_norminf > RT(1.e20)*max_norm)
-                {
-                    if (verbose > 0) {
-                        amrex::Print() << "MLMG: Failing to converge after " << iter+1 << " iterations."
-                                       << " resid, resid/" << norm_name << " = "
-                                       << composite_norminf << ", "
-                                       << composite_norminf/max_norm << "\n";
-                    }
+                bool fine_converged = (fine_norminf <= res_target);
 
-                    if ( throw_exception ) {
-                        throw error("MLMG blew up.");
-                    } else {
-                        amrex::Abort("MLMG failing so lets stop here");
+                if (namrlevs == 1 && fine_converged) {
+                    converged = true;
+                } else if (fine_converged) {
+                    // finest level is converged, but we still need to test the coarse levels
+                    computeMLResidual(finest_amr_lev-1);
+                    RT crse_norminf = MLResNormInf(finest_amr_lev-1);
+                    if (verbose >= 2) {
+                        amrex::Print() << "MLMG: Iteration " << std::setw(3) << iter+1
+                                    << " Crse resid/" << norm_name << " = "
+                                    << crse_norminf/max_norm << "\n";
+                    }
+                    converged = (crse_norminf <= res_target);
+                    composite_norminf = std::max(fine_norminf, crse_norminf);
+                } else {
+                    converged = false;
+                }
+
+                if (converged) {
+                    if (verbose >= 1) {
+                        amrex::Print() << "MLMG: Final Iter. " << iter+1
+                                    << " resid, resid/" << norm_name << " = "
+                                    << composite_norminf << ", "
+                                    << composite_norminf/max_norm << "\n";
+                        poisson_iters = iter + 1; 
+                    }
+                    break;
+                } else {
+                    if (composite_norminf > RT(1.e20)*max_norm)
+                    {
+                        if (verbose > 0) {
+                            amrex::Print() << "MLMG: Failing to converge after " << iter+1 << " iterations."
+                                        << " resid, resid/" << norm_name << " = "
+                                        << composite_norminf << ", "
+                                        << composite_norminf/max_norm << "\n";
+                        }
+
+                        if ( throw_exception ) {
+                            throw error("MLMG blew up.");
+                        } else {
+                            amrex::Abort("MLMG failing so lets stop here");
+                        }
                     }
                 }
             }
-        }
 
-        if (!converged && do_fixed_number_of_iters == 0) {
-            if (verbose > 0) {
-                amrex::Print() << "MLMG: Failed to converge after " << max_iters << " iterations."
-                               << " resid, resid/" << norm_name << " = "
-                               << composite_norminf << ", "
-                               << composite_norminf/max_norm << "\n";
-            }
+            if (!converged && do_fixed_number_of_iters == 0) {
+                if (verbose > 0) {
+                    amrex::Print() << "MLMG: Failed to converge after " << max_iters << " iterations."
+                                << " resid, resid/" << norm_name << " = "
+                                << composite_norminf << ", "
+                                << composite_norminf/max_norm << "\n";
+                }
 
-            if ( throw_exception ) {
-                throw error("MLMG failed to converge.");
-            } else {
-                amrex::Abort("MLMG failed.");
+                if ( throw_exception ) {
+                    throw error("MLMG failed to converge.");
+                } else {
+                    amrex::Abort("MLMG failed.");
+                }
             }
+            timer[iter_time] = amrex::second() - iter_start_time;
         }
-        timer[iter_time] = amrex::second() - iter_start_time;
     }
 
     linop.postSolve(sol);
