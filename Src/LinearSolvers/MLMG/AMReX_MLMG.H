@@ -347,12 +347,12 @@ auto
 MLMGT<MF>::solve (std::initializer_list<AMF*> a_sol,
                   std::initializer_list<AMF const*> a_rhs,
                   RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file, 
-                  bool skip_poisson = false) -> RT
+                  bool poisson_skip) -> RT
 {
     return solve(Vector<AMF*>(std::move(a_sol)),
                  Vector<AMF const*>(std::move(a_rhs)),
                  a_tol_rel, a_tol_abs, checkpoint_file, 
-                 skip_poisson);
+                 poisson_skip);
 }
 
 template <typename MF>
@@ -360,7 +360,7 @@ template <typename AMF>
 auto
 MLMGT<MF>::solve (const Vector<AMF*>& a_sol, const Vector<AMF const*>& a_rhs,
                   RT a_tol_rel, RT a_tol_abs, const char* checkpoint_file,
-                  bool skip_poisson = false) -> RT
+                  bool poisson_skip) -> RT
 {
     BL_PROFILE("MLMG::solve()");
 
@@ -425,7 +425,7 @@ MLMGT<MF>::solve (const Vector<AMF*>& a_sol, const Vector<AMF const*>& a_rhs,
     }
     const RT res_target = std::max(a_tol_abs, std::max(a_tol_rel,RT(1.e-16))*max_norm);
 
-    if (!skip_poisson) {
+    if (!poisson_skip) {
         if (!is_nsolve && resnorm0 <= res_target) {
             composite_norminf = resnorm0;
             if (verbose >= 1) {
