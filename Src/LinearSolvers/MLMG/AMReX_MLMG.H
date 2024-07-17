@@ -425,7 +425,7 @@ MLMGT<MF>::solve (const Vector<AMF*>& a_sol, const Vector<AMF const*>& a_rhs,
     }
     const RT res_target = std::max(a_tol_abs, std::max(a_tol_rel,RT(1.e-16))*max_norm);
 
-    if ((!poisson_skip) || (!is_nsolve && resnorm0 <= res_target)) {
+    if (poisson_skip || (!is_nsolve && resnorm0 <= res_target)) {
         composite_norminf = resnorm0;
         if (verbose >= 1) {
             amrex::Print() << "MLMG: No iterations needed\n";
