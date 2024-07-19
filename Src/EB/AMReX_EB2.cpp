@@ -82,12 +82,11 @@ const IndexSpace* TopIndexSpaceIfPresent() noexcept {
 
 void
 Build (const Geometry& geom, int required_coarsening_level,
-       int max_coarsening_level, int ngrow, std::string const& eb2_preface,
+       int max_coarsening_level, int ngrow,
        bool build_coarse_level_by_coarsening,
        bool a_extend_domain_face, int a_num_coarsen_opt)
 {
-    std::string const& pp_string = eb2_preface + "eb2";
-    ParmParse pp(pp_string);
+    ParmParse pp("eb2");
     std::string geom_type;
     pp.get("geom_type", geom_type);
 
