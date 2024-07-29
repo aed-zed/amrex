@@ -62,6 +62,7 @@ public:
     void operator= (Buffer const&) = delete;
     void operator= (Buffer &&) = delete;
 
+    [[nodiscard]] AMREX_GPU_DEVICE T const* gpuData () const noexcept { return (d_data != nullptr) ? d_data : nullptr; }
     [[nodiscard]] T const* data () const noexcept { return (d_data != nullptr) ? d_data : h_data; }
     [[nodiscard]] T* data () noexcept { return (d_data != nullptr) ? d_data : h_data; }
 
